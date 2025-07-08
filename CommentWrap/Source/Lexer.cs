@@ -168,7 +168,8 @@ namespace CommentWrap
 				return tokens;
 			}
 
-			// Handle comment lines with no actual content (just // with optional whitespace)
+			// Handle comment lines with no actual content (just // with optional
+			// whitespace)
 			if (trimmed.StartsWith("//"))
 			{
 				string content = ExtractCommentContent(trimmed);
@@ -373,7 +374,8 @@ namespace CommentWrap
 				titleStart++;
 			}
 
-			// Find the end of the title (next equal sign after the title, or end of content)
+			// Find the end of the title (next equal sign after the title, or end of
+			// content)
 			int titleEnd = content.Length;
 			for (int i = titleStart; i < content.Length; i++)
 			{
