@@ -5,6 +5,11 @@ global using Task = System.Threading.Tasks.Task;
 using System.Runtime.InteropServices;
 using System.Threading;
 
+// =============================================================================
+// Todo: - Check tabs v spaces affecting base indent
+//       - Banner command?
+//       - EOL //?
+// =============================================================================
 namespace CommentWrap
 {
 	[PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
