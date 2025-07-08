@@ -1,0 +1,146 @@
+﻿Wrapping should always occur at 80 characters, including the slashes (but respect word boundaries). The extension should only affect blocks of comments that the cursor is within (so, not the entire file). The extension should only touch comments that begin with `//` (not `///` or `/*`). Now for some examples. The formatting should respect whether the first line of the block begins with a space or not and then should adjust every following line to match. Both regular comment blocks and framed comment blocks should be parsed the same way. Frames will just add (or alter) frames at the beginning and end of the block.
+
+This (A) has a leading space after the slashes:
+
+```
+// This is a regular comment that should be wrapped at 80 characters; inserting extra words: giraffe, guitar, garbage, gargoyle.
+//This is a second line that should be combined with the first line and should be wrapped at 80 characters and not have a space after the slashes!
+```
+
+It should become this (B):
+
+```
+// This is a regular comment that should be wrapped at 80 characters; inserting
+// extra words: giraffe, guitar, garbage, gargoyle. This is a second line that
+// should be combined with the first line and should be wrapped at 80 characters
+// and not have a space after the slashes!
+```
+
+And this (C) has no leading space:
+
+```
+//This is a regular comment that should be wrapped at 80 characters; inserting extra words: giraffe, guitar, garbage, gargoyle.
+// This is a second line that should be combined with the first line and should be wrapped at 80 characters and not have a space after the slashes!
+```
+
+So it should become this (D):
+
+```
+//This is a regular comment that should be wrapped at 80 characters; inserting
+//extra words: giraffe, guitar, garbage, gargoyle. This is a second line that
+//should be combined with the first line and should be wrapped at 80 characters
+//and not have a space after the slashes!
+```
+
+We should also handle all bullets in the following way(where we indent beneath the first word, not the bullet itself):
+
+This (E):
+
+```
+// This is a bullet list comment with a particularly large introductory statement:
+// - This is a very long bullet at the start of the bulleted list, and it is over 80 characters
+// - This is a normal bullet
+```
+
+Becomes this (F):
+
+```
+// This is a bullet list comment with a particularly large introductory
+// statement:
+// - This is a very long bullet at the start of the bulleted list, and it is
+//   over 80 characters
+// - This is a normal bullet
+```
+
+We will also establish a "vocative indent," which will work as follows, where this (G):
+
+```
+// Bugs: Bugs are listed here, and this line will go on for over 80 characters, so we'll wrap it.
+```
+
+Will become this (H):
+
+```
+// Bugs: Bugs are listed here, and this line will go on for over 80 characters,
+//       so we'll wrap it.
+```
+
+If a single block has multiple vocatives, we'll indent all relative to the longest vocative. So this (I):
+
+```
+// Bugs: Bugs are listed here, and this line will also go on for over 80 characters.
+// Description: Handles network connections and data transmission for the application. Manages connection pooling, retry logic, and error handling.
+```
+
+Will become this (J):
+
+```
+// Bugs:        Bugs are listed here, and this line will also go on for over 80
+//              characters.
+// Description: Handles network connections and data transmission for the
+//              application. Manages connection pooling, retry logic, and error
+//              handling.
+```
+
+Bullets within vocatives will be indented as follows, where this (K):
+
+```
+// TODOs: - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+```
+
+Becomes this (L) (again aligned under the first word of the bullet on wrap):
+
+```
+// TODOs: - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+//          eiusmod tempor incididunt ut labore et dolore magna aliqua.
+```
+
+Now, for any comment block beginning like this `//=` or `// =`, we will process as above for all elements in the block.
+
+The difference being we will add frames around the block. If the block starts with `//=`, we'll normalize the frames (adding or altering the bottom frame) to be 80 chars long (including slashes). Text within the frame will be handled later (i.e. `//====TITLE=====`).
+
+If the block starts with `// =`, we'll normalize the frames to be 80 chars long (including slashes and a space for each).
+
+So, putting it all together, this (M):
+
+```
+// =
+//         This is some text. It will be long so we can demonstrate the wrapping at 80 characters.
+//
+// - This is a bullet that is going to use text that is over the 80 character limit for text in a line.
+//
+// Bugs: Bugs are listed here, and this line will also go on for over 80 characters.
+// 
+//      Description: Handles network connections and data transmission for the application. Manages connection pooling, retry logic, and error handling.
+//
+// TODOs: - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+// - Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+// - Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+//==============================================================================================================================
+```
+
+should become this (N):
+
+```
+// =============================================================================
+// This is some text. It will be long so we can demonstrate the wrapping at 80
+// characters.
+//
+// - This is a bullet that is going to use text that is over the 80 character
+//   limit for text in a line.
+//
+// Bugs:        Bugs are listed here, and this line will also go on for over 80
+//              characters.
+//
+// Description: Handles network connections and data transmission for the
+//              application. Manages connection pooling, retry logic, and error
+//              handling.
+//
+// TODOs:       - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+//                do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+//              - Ut enim ad minim veniam, quis nostrud exercitation ullamco
+//                laboris nisi ut aliquip ex ea commodo consequat.
+//              - Duis aute irure dolor in reprehenderit in voluptate velit esse
+//                cillum dolore eu fugiat nulla pariatur.
+// =============================================================================
+```
