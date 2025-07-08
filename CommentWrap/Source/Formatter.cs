@@ -4,7 +4,7 @@ namespace CommentWrap
 {
 	internal class Formatter
 	{
-		public List<string> Format(List<Parser.Token> tokens, Extractor.RawBlock.BlockType blockType, int baseIndentationLength)
+		public List<string> Format(List<Lexer.Token> tokens, Extractor.RawBlock.BlockType blockType, int baseIndentationLength)
 		{
 			var result = new List<string>();
 
@@ -25,37 +25,37 @@ namespace CommentWrap
 
 				switch (token.Type)
 				{
-					case Parser.Token.TokenType.Frame:
+					case Lexer.Token.TokenType.Frame:
 						FinishCurrentLine(result, currentLine, commentPrefix, currentIndent);
 						result.Add("//" + new string('=', maxLineLength - 2));  // -2 for "//"
 						currentIndent = 0;
 						break;
 
-					case Parser.Token.TokenType.SpacedFrame:
+					case Lexer.Token.TokenType.SpacedFrame:
 						FinishCurrentLine(result, currentLine, commentPrefix, currentIndent);
 						result.Add("// " + new string('=', maxLineLength - 3));  // -3 for "// "
 						currentIndent = 0;
 						break;
 
-					case Parser.Token.TokenType.TitleFrame:
+					case Lexer.Token.TokenType.TitleFrame:
 						FinishCurrentLine(result, currentLine, commentPrefix, currentIndent);
 						result.Add(CreateTitleFrame(token.Text, false, maxLineLength));
 						currentIndent = 0;
 						break;
 
-					case Parser.Token.TokenType.SpacedTitleFrame:
+					case Lexer.Token.TokenType.SpacedTitleFrame:
 						FinishCurrentLine(result, currentLine, commentPrefix, currentIndent);
 						result.Add(CreateTitleFrame(token.Text, true, maxLineLength));
 						currentIndent = 0;
 						break;
 
-					case Parser.Token.TokenType.EmptyLine:
+					case Lexer.Token.TokenType.EmptyLine:
 						FinishCurrentLine(result, currentLine, commentPrefix, currentIndent);
 						result.Add(commentPrefix.TrimEnd());
 						currentIndent = 0;
 						break;
 
-					case Parser.Token.TokenType.VocativeStart:
+					case Lexer.Token.TokenType.VocativeStart:
 						FinishCurrentLine(result, currentLine, commentPrefix, currentIndent);
 						// Vocative starts at beginning of line (no indent)
 						string paddedVocative = (token.Text + ":").PadRight(vocativeIndent);
@@ -63,17 +63,17 @@ namespace CommentWrap
 						currentIndent = 0; // No indent for the vocative line itself
 						break;
 
-					case Parser.Token.TokenType.BulletStart:
+					case Lexer.Token.TokenType.BulletStart:
 						FinishCurrentLine(result, currentLine, commentPrefix, currentIndent);
 						// Regular bullet: "// - word"
 						currentLine.Add("- " + token.Text);
 						currentIndent = 0; // No indent for the bullet line itself
 						break;
 
-					case Parser.Token.TokenType.VocativeBulletStart:
+					case Lexer.Token.TokenType.VocativeBulletStart:
 						// Check if this is the first vocative bullet on the vocative line
 						bool isFirstBulletOnVocativeLine = currentLine.Count > 0 &&
-							i > 0 && tokens[i - 1].Type == Parser.Token.TokenType.VocativeStart;
+							i > 0 && tokens[i - 1].Type == Lexer.Token.TokenType.VocativeStart;
 
 						if (isFirstBulletOnVocativeLine)
 						{
@@ -90,10 +90,10 @@ namespace CommentWrap
 						}
 						break;
 
-					case Parser.Token.TokenType.Text:
-					case Parser.Token.TokenType.VocativeText:
-					case Parser.Token.TokenType.BulletText:
-					case Parser.Token.TokenType.VocativeBulletText:
+					case Lexer.Token.TokenType.Text:
+					case Lexer.Token.TokenType.VocativeText:
+					case Lexer.Token.TokenType.BulletText:
+					case Lexer.Token.TokenType.VocativeBulletText:
 						AddTextToken(result, currentLine, token.Text, commentPrefix,
 								   GetAppropriateIndent(token.Type, vocativeIndent),
 								   availableTextWidth, ref currentIndent);
@@ -115,13 +115,13 @@ namespace CommentWrap
 
 		private const int MAX_CHARS = 80;
 
-		private int GetAppropriateIndent(Parser.Token.TokenType tokenType, int vocativeIndent)
+		private int GetAppropriateIndent(Lexer.Token.TokenType tokenType, int vocativeIndent)
 		{
 			return tokenType switch
 			{
-				Parser.Token.TokenType.VocativeText => vocativeIndent,
-				Parser.Token.TokenType.BulletText => 2,  // Align under first word of bullet
-				Parser.Token.TokenType.VocativeBulletText => vocativeIndent + 2,
+				Lexer.Token.TokenType.VocativeText => vocativeIndent,
+				Lexer.Token.TokenType.BulletText => 2,  // Align under first word of bullet
+				Lexer.Token.TokenType.VocativeBulletText => vocativeIndent + 2,
 				_ => 0
 			};
 		}
@@ -163,13 +163,13 @@ namespace CommentWrap
 			}
 		}
 
-		private int CalculateVocativeIndent(List<Parser.Token> tokens)
+		private int CalculateVocativeIndent(List<Lexer.Token> tokens)
 		{
 			int maxVocativeLength = 0;
 
 			foreach (var token in tokens)
 			{
-				if (token.Type == Parser.Token.TokenType.VocativeStart)
+				if (token.Type == Lexer.Token.TokenType.VocativeStart)
 				{
 					int length = token.Text.Length + 1; // +1 for colon
 					if (length > maxVocativeLength)

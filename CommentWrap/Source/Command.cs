@@ -9,7 +9,7 @@ namespace CommentWrap
 	internal sealed class Command : BaseCommand<Command>
 	{
 		private readonly Extractor Extractor = new();
-		private readonly Parser Parser = new();
+		private readonly Lexer Lexer = new();
 		private readonly Formatter Formatter = new();
 
 		protected override async Task ExecuteAsync(OleMenuCmdEventArgs e)
@@ -49,11 +49,11 @@ namespace CommentWrap
 				return;
 			}
 
-			var tokens = Parser.Parse(rawBlock.Lines);
+			var tokens = Lexer.Tokenize(rawBlock.Lines);
 			var formatted = Formatter.Format(tokens, rawBlock.Type, rawBlock.BaseIndentation.Length);
 
 			// Test display
-			//await VS.MessageBox.ShowWarningAsync("CommentWrap", Parser.ToDebugString(tokens));
+			//await VS.MessageBox.ShowWarningAsync("CommentWrap", Lexer.ToDebugString(tokens));
 			//await VS.MessageBox.ShowWarningAsync("CommentWrap", string.Join("\n", formatted));
 			//File.WriteAllText("../output.txt", string.Join("\n", formatted));
 

@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace CommentWrap
 {
-	internal class Parser
+	internal class Lexer
 	{
 		public struct Token
 		{
@@ -35,7 +35,7 @@ namespace CommentWrap
 			public string Text;
 		}
 
-		public List<Token> Parse(List<string> lines)
+		public List<Token> Tokenize(List<string> lines)
 		{
 			var result = new List<Token>();
 			tokenMode = TokenMode.Normal;
@@ -49,7 +49,7 @@ namespace CommentWrap
 				// Update mode BEFORE parsing the line
 				UpdateTokenModeFromLine(line);
 
-				var lineTokens = ParseLine(line);
+				var lineTokens = LexLine(line);
 				result.AddRange(lineTokens);
 			}
 
@@ -156,7 +156,7 @@ namespace CommentWrap
 			};
 		}
 
-		private List<Token> ParseLine(string line)
+		private List<Token> LexLine(string line)
 		{
 			var tokens = new List<Token>();
 			string trimmed = line.TrimStart();
@@ -189,7 +189,7 @@ namespace CommentWrap
 			// Check for frames first
 			if (IsFrame(trimmed))
 			{
-				tokens.Add(ParseFrame(trimmed));
+				tokens.Add(LexFrame(trimmed));
 				return tokens;
 			}
 
@@ -197,10 +197,10 @@ namespace CommentWrap
 			string commentContent = ExtractCommentContent(trimmed);
 
 			// Parse content into words
-			return ParseWordsInContent(commentContent);
+			return LexWordsInContent(commentContent);
 		}
 
-		private List<Token> ParseWordsInContent(string content)
+		private List<Token> LexWordsInContent(string content)
 		{
 			var tokens = new List<Token>();
 			content = content.TrimStart();
@@ -318,7 +318,7 @@ namespace CommentWrap
 			return trimmed.StartsWith("//=") || trimmed.StartsWith("// =");
 		}
 
-		private Token ParseFrame(string trimmed)
+		private Token LexFrame(string trimmed)
 		{
 			Token.TokenType detectedFrameType;
 			string title = "";

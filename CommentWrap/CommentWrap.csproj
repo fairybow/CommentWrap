@@ -47,7 +47,7 @@
   <ItemGroup>
     <Compile Include="Source\Extractor.cs" />
     <Compile Include="Source\Formatter.cs" />
-    <Compile Include="Source\Parser.cs" />
+    <Compile Include="Source\Lexer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Source\Command.cs" />
     <Compile Include="Source\Package.cs" />
