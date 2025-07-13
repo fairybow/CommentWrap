@@ -61,29 +61,23 @@ namespace CommentWrap
 			ReplaceCommentBlock(textView, rawBlock, formatted);
 		}
 
-		private void ReplaceCommentBlock(ITextView textView, Extractor.RawBlock blockInfo, List<string> formattedLines)
+		private void ReplaceCommentBlock(ITextView textView, Extractor.RawBlock rawBlock, List<string> formattedLines)
 		{
 			var textBuffer = textView.TextBuffer;
 			var snapshot = textBuffer.CurrentSnapshot;
 
-			// Capture cursor position before replacement
-			var cursorPosition = textView.Caret.Position.BufferPosition;
-			var startLine = snapshot.GetLineFromLineNumber(blockInfo.StartLineNumber);
+			// Apply base indentation to all formatted lines
+			var indentedLines = formattedLines.Select(line =>
+				string.IsNullOrWhiteSpace(line) ? rawBlock.BaseIndentation.TrimEnd() + line.TrimStart()
+												: rawBlock.BaseIndentation + line).ToList();
 
-			// Calculate cursor position relative to block start
-			int relativeLine = cursorPosition.GetContainingLine().LineNumber - blockInfo.StartLineNumber;
-			int relativeColumn = cursorPosition.Position - cursorPosition.GetContainingLine().Start.Position;
-
-			// Get the span of the entire comment block
-			var endLine = snapshot.GetLineFromLineNumber(blockInfo.EndLineNumber);
+			// Get the original text for comparison
+			var startLine = snapshot.GetLineFromLineNumber(rawBlock.StartLineNumber);
+			var endLine = snapshot.GetLineFromLineNumber(rawBlock.EndLineNumber);
 			var spanStart = startLine.Start;
 			var spanEnd = endLine.EndIncludingLineBreak;
 			var replaceSpan = new Span(spanStart.Position, spanEnd.Position - spanStart.Position);
-
-			// Apply base indentation to all formatted lines
-			var indentedLines = formattedLines.Select(line =>
-				string.IsNullOrWhiteSpace(line) ? blockInfo.BaseIndentation.TrimEnd() + line.TrimStart()
-												: blockInfo.BaseIndentation + line).ToList();
+			string originalText = snapshot.GetText(replaceSpan);
 
 			// Join formatted lines with environment-appropriate line endings
 			string formattedText = string.Join(Environment.NewLine, indentedLines);
@@ -94,13 +88,23 @@ namespace CommentWrap
 				formattedText += Environment.NewLine;
 			}
 
+			// Compare original and formatted text - if identical, don't make any changes
+			if (originalText == formattedText) return; // No changes needed
+
+			// Capture cursor position before replacement
+			var cursorPosition = textView.Caret.Position.BufferPosition;
+
+			// Calculate cursor position relative to block start
+			int relativeLine = cursorPosition.GetContainingLine().LineNumber - rawBlock.StartLineNumber;
+			int relativeColumn = cursorPosition.Position - cursorPosition.GetContainingLine().Start.Position;
+
 			// Apply the replacement
 			using var edit = textBuffer.CreateEdit();
 			edit.Replace(replaceSpan, formattedText);
 			var newSnapshot = edit.Apply();
 
 			// Restore cursor position with simple clamping
-			int newAbsoluteLine = Math.Max(0, Math.Min(blockInfo.StartLineNumber + relativeLine, newSnapshot.LineCount - 1));
+			int newAbsoluteLine = Math.Max(0, Math.Min(rawBlock.StartLineNumber + relativeLine, newSnapshot.LineCount - 1));
 			var targetLine = newSnapshot.GetLineFromLineNumber(newAbsoluteLine);
 			int newColumn = Math.Min(relativeColumn, targetLine.Length);
 			int newPosition = targetLine.Start.Position + newColumn;
