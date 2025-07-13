@@ -204,6 +204,10 @@ namespace CommentWrap
 		private List<Token> LexWordsInContent(string content)
 		{
 			var tokens = new List<Token>();
+
+			// Check if this line is indented (has leading spaces)
+			bool isIndented = content.Length > 0 && char.IsWhiteSpace(content[0]);
+
 			content = content.TrimStart();
 
 			if (string.IsNullOrEmpty(content))
@@ -211,8 +215,8 @@ namespace CommentWrap
 				return tokens;
 			}
 
-			// Check for vocative (word followed by colon)
-			if (IsVocativeStart(content))
+			// Check for vocative (word followed by colon) - but only on non-indented lines
+			if (!isIndented && IsVocativeStart(content))
 			{
 				string vocativeWord = ExtractVocativeWord(content);
 				tokens.Add(new Token { Type = Token.TokenType.VocativeStart, Text = vocativeWord });
@@ -454,10 +458,15 @@ namespace CommentWrap
 			// Non-comment lines don't change mode
 			if (!trimmed.StartsWith("//")) return;
 
-			string content = ExtractCommentContent(trimmed).TrimStart();
+			string content = ExtractCommentContent(trimmed);
 
-			// Check for vocative start (single word + colon at line beginning)
-			if (IsVocativeStart(content))
+			// Check if this line is indented (has leading spaces)
+			bool isIndented = content.Length > 0 && char.IsWhiteSpace(content[0]);
+
+			content = content.TrimStart();
+
+			// Check for vocative start (single word + colon at line beginning) - but only on non-indented lines
+			if (!isIndented && IsVocativeStart(content))
 			{
 				// Check if this vocative line also contains a bullet
 				string afterColon = content.Substring(content.IndexOf(':') + 1).Trim();
