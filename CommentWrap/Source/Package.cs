@@ -6,10 +6,13 @@ using System.Runtime.InteropServices;
 using System.Threading;
 
 // =============================================================================
-// Todo: - Command to make banners (`///`-style, 1 line (framed, so 3 total),
-//         with heading between asterisms). Would place the cursor between
-//         asterisms after making it.
+// Todo: - Command to make banners (`///`-style (maybe), 1 line (framed, so 3
+//         total), with heading between asterisms). Would place the cursor
+//         between asterisms after making it.
 //       - Command to cycle through banners
+//       - Make all `//` green or some other color for visual help
+//       - Any way to signal where each banner made by this extension is in the
+//         scroll view on right?
 //       - EOL, i.e. `// Content [padding spaces] //`?
 // =============================================================================
 namespace CommentWrap
