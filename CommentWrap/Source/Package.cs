@@ -6,9 +6,11 @@ using System.Runtime.InteropServices;
 using System.Threading;
 
 // =============================================================================
-// Todo: - Check tabs v spaces affecting base indent
-//       - Banner command?
-//       - EOL //?
+// Todo: - Command to make banners (`///`-style, 1 line (framed, so 3 total),
+//         with heading between asterisms). Would place the cursor between
+//         asterisms after making it.
+//       - Command to cycle through banners
+//       - EOL, i.e. `// Content [padding spaces] //`?
 // =============================================================================
 namespace CommentWrap
 {
